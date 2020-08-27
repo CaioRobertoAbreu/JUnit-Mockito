@@ -10,7 +10,12 @@ import br.ce.wcaquino.entidades.Usuario;
 
 public class LocacaoService {
 	
-	public Locacao alugarFilme(Usuario usuario, Filme filme) {
+	public Locacao alugarFilme(Usuario usuario, Filme filme) throws Exception {
+
+		if(filme.getEstoque() == 0) {
+			throw new Exception("Filme sem estoque");
+		}
+
 		Locacao locacao = new Locacao();
 		locacao.setFilme(filme);
 		locacao.setUsuario(usuario);
@@ -26,9 +31,5 @@ public class LocacaoService {
 		//TODO adicionar método para salvar
 		
 		return locacao;
-	}
-
-	public static void main(String[] args) {
-		
 	}
 }

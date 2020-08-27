@@ -40,4 +40,5 @@ public class Locacao {
 	public void setFilme(Filme filme) {
 		this.filme = filme;
 	}
+
 }
