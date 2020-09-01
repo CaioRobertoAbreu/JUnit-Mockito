@@ -6,12 +6,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import br.ce.wcaquino.daos.LocacaoDao;
 import br.ce.wcaquino.entidades.Filme;
 import br.ce.wcaquino.entidades.Locacao;
 import br.ce.wcaquino.entidades.Usuario;
 import br.ce.wcaquino.utils.DataUtils;
 
 public class LocacaoService {
+
+	private LocacaoDao dao;
 	
 	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes) throws Exception {
 		for(Filme f : filmes){
@@ -35,6 +38,8 @@ public class LocacaoService {
 			dataEntrega = adicionarDias(dataEntrega, 1);
 		}
 		locacao.setDataRetorno(dataEntrega);
+
+		dao.salvar(locacao);
 		
 		return locacao;
 	}
@@ -61,5 +66,9 @@ public class LocacaoService {
 				filmes.get(i-1).setPrecoLocacao(0d);
 			}
 		}
+	}
+
+	public void setDao(LocacaoDao dao) {
+		this.dao = dao;
 	}
 }

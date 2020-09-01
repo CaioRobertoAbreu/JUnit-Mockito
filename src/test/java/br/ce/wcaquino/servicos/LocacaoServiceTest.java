@@ -1,5 +1,7 @@
 package br.ce.wcaquino.servicos;
 
+import br.ce.wcaquino.daos.LocacaoDao;
+import br.ce.wcaquino.daos.LocacaoDaoFake;
 import br.ce.wcaquino.entidades.Filme;
 import br.ce.wcaquino.entidades.Locacao;
 import br.ce.wcaquino.entidades.Usuario;
@@ -36,6 +38,10 @@ public class LocacaoServiceTest {
         filmes = new ArrayList<>();
         service = new LocacaoService();
         locacao = new Locacao();
+
+        LocacaoDao dao = new LocacaoDaoFake();
+
+        service.setDao(dao);
     }
 
 
