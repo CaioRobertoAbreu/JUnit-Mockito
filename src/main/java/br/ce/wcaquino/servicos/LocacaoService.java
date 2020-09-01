@@ -1,27 +1,34 @@
 package br.ce.wcaquino.servicos;
 
-import static br.ce.wcaquino.utils.DataUtils.adicionarDias;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
 import br.ce.wcaquino.daos.LocacaoDao;
 import br.ce.wcaquino.entidades.Filme;
 import br.ce.wcaquino.entidades.Locacao;
 import br.ce.wcaquino.entidades.Usuario;
 import br.ce.wcaquino.utils.DataUtils;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import static br.ce.wcaquino.utils.DataUtils.adicionarDias;
+
 public class LocacaoService {
 
 	private LocacaoDao dao;
-	
+	private SPCSerasaService spcSerasa;
+	private EmailService emailService;
+
 	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes) throws Exception {
 		for(Filme f : filmes){
 			if(f.getEstoque() == 0){
 				throw new Exception();
 			}
 		}
+
+		if (spcSerasa.estaNegativado(usuario)) {
+			throw new Exception("Usuário negativado.");
+		}
+
 
 		aplicarDescontos(filmes);
 
@@ -44,6 +51,16 @@ public class LocacaoService {
 		return locacao;
 	}
 
+
+
+	public void notificarLocacaoEmAtraso(){
+		List<Locacao> locacaoesEmAtrado = dao.obterAtrasados();
+		for(Locacao locacao : locacaoesEmAtrado){
+			emailService.enviarEmailCobranca(locacao.getUsuario());
+		}
+	}
+
+
 	private double valorTotalLocacao(List<Filme> filmes) {
 		double soma = 0;
 		for (Filme f: filmes){
@@ -51,6 +68,7 @@ public class LocacaoService {
 		}
 		return soma;
 	}
+
 
 	private void aplicarDescontos(List<Filme> filmes) {
 		for(int i = 0; i <= filmes.size(); i++){
@@ -71,4 +89,13 @@ public class LocacaoService {
 	public void setDao(LocacaoDao dao) {
 		this.dao = dao;
 	}
+
+	public void setSpcSerasa(SPCSerasaService spcSerasa){
+		this.spcSerasa = spcSerasa;
+	}
+
+	public void setEmailService(EmailService emailService){
+		this.emailService = emailService;
+	}
+
 }

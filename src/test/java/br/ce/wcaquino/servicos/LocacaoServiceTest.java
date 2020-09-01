@@ -1,7 +1,6 @@
 package br.ce.wcaquino.servicos;
 
 import br.ce.wcaquino.daos.LocacaoDao;
-import br.ce.wcaquino.daos.LocacaoDaoFake;
 import br.ce.wcaquino.entidades.Filme;
 import br.ce.wcaquino.entidades.Locacao;
 import br.ce.wcaquino.entidades.Usuario;
@@ -12,9 +11,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.migrationsupport.rules.EnableRuleMigrationSupport;
 import org.junit.rules.ErrorCollector;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.*;
 
+import static br.ce.wcaquino.utils.DataUtils.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,6 +30,9 @@ public class LocacaoServiceTest {
     private List<Filme> filmes;
     private LocacaoService service;
     private Locacao locacao;
+    private SPCSerasaService spcSerasa;
+    private LocacaoDao dao;
+    private EmailService email;
 
     @Rule
     public ErrorCollector error = new ErrorCollector();
@@ -39,9 +45,14 @@ public class LocacaoServiceTest {
         service = new LocacaoService();
         locacao = new Locacao();
 
-        LocacaoDao dao = new LocacaoDaoFake();
-
+        dao = Mockito.mock(LocacaoDao.class);
         service.setDao(dao);
+
+        spcSerasa = Mockito.mock(SPCSerasaService.class);
+        service.setSpcSerasa(spcSerasa);
+
+        email = Mockito.mock(EmailService.class);
+        service.setEmailService(email);
     }
 
 
@@ -53,12 +64,12 @@ public class LocacaoServiceTest {
         locacao = service.alugarFilme(pedro, filmes);
 
         assertEquals(14.99, locacao.getFilmes().get(0).getPrecoLocacao(), 0.01);
-        assertTrue(DataUtils.isMesmaData(locacao.getDataLocacao(), new Date()));
-        assertTrue(DataUtils.isMesmaData(locacao.getDataRetorno(), DataUtils.obterDataComDiferencaDias(1)));
+        assertTrue(isMesmaData(locacao.getDataLocacao(), new Date()));
+        assertTrue(isMesmaData(locacao.getDataRetorno(), obterDataComDiferencaDias(1)));
 
         //Usando assertThat
         assertThat(locacao.getFilmes().get(0).getPrecoLocacao(), equalTo(14.99));
-        assertThat(DataUtils.isMesmaData(locacao.getDataRetorno(), DataUtils.obterDataComDiferencaDias(1)),
+        assertThat(isMesmaData(locacao.getDataRetorno(), obterDataComDiferencaDias(1)),
                 is(true));
 
         error.checkThat(locacao.getFilmes().get(0).getPrecoLocacao(), equalTo(14.99));
@@ -134,10 +145,36 @@ public class LocacaoServiceTest {
 
         locacao = service.alugarFilme(pedro, filmes);
 
-        boolean eSegunda = DataUtils.verificarDiaSemana(locacao.getDataRetorno(), Calendar.MONDAY);
+        boolean eSegunda = verificarDiaSemana(locacao.getDataRetorno(), Calendar.MONDAY);
 
         assertTrue(eSegunda);
 
     }
 
+    @Test
+    public void naoDevePassarNegativado() throws Exception {
+        filmes = Arrays.asList(new Filme("Filme 1", 7, 7.00),
+                new Filme("Filme 2", 7, 7.00));
+
+        Mockito.when(spcSerasa.estaNegativado(pedro)).thenReturn(true);
+
+        assertThrows(Exception.class, () -> service.alugarFilme(pedro, filmes));
+    }
+
+    @Test
+    public void deveEnviarEmailDeCobrança() {
+        Locacao locacao = new Locacao();
+        Usuario usuario = new Usuario("user");
+        locacao.setUsuario(usuario);
+        locacao.setDataRetorno(DataUtils.obterDataComDiferencaDias(-2));
+
+
+        List<Locacao> pendentes = new ArrayList<>();
+        pendentes.add(locacao);
+
+        Mockito.when(dao.obterAtrasados()).thenReturn(pendentes);
+        service.notificarLocacaoEmAtraso();
+        Mockito.verify(email).enviarEmailCobranca(usuario);
+
+    }
 }
