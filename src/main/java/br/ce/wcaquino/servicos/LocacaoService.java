@@ -14,6 +14,7 @@ import static br.ce.wcaquino.utils.DataUtils.adicionarDias;
 
 public class LocacaoService {
 
+
 	private LocacaoDao dao;
 	private SPCSerasaService spcSerasa;
 	private EmailService emailService;
@@ -84,18 +85,6 @@ public class LocacaoService {
 				filmes.get(i-1).setPrecoLocacao(0d);
 			}
 		}
-	}
-
-	public void setDao(LocacaoDao dao) {
-		this.dao = dao;
-	}
-
-	public void setSpcSerasa(SPCSerasaService spcSerasa){
-		this.spcSerasa = spcSerasa;
-	}
-
-	public void setEmailService(EmailService emailService){
-		this.emailService = emailService;
 	}
 
 }

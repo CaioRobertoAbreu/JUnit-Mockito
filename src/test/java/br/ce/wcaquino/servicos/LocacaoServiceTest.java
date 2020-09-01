@@ -11,9 +11,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.migrationsupport.rules.EnableRuleMigrationSupport;
 import org.junit.rules.ErrorCollector;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.*;
 
@@ -28,10 +31,16 @@ public class LocacaoServiceTest {
 
     private Usuario pedro;
     private List<Filme> filmes;
-    private LocacaoService service;
     private Locacao locacao;
-    private SPCSerasaService spcSerasa;
+
+    @InjectMocks
+    private LocacaoService service;
+
+    @Mock
     private LocacaoDao dao;
+    @Mock
+    private SPCSerasaService spcSerasa;
+    @Mock
     private EmailService email;
 
     @Rule
@@ -45,14 +54,7 @@ public class LocacaoServiceTest {
         service = new LocacaoService();
         locacao = new Locacao();
 
-        dao = Mockito.mock(LocacaoDao.class);
-        service.setDao(dao);
-
-        spcSerasa = Mockito.mock(SPCSerasaService.class);
-        service.setSpcSerasa(spcSerasa);
-
-        email = Mockito.mock(EmailService.class);
-        service.setEmailService(email);
+        MockitoAnnotations.initMocks(this);
     }
 
 
