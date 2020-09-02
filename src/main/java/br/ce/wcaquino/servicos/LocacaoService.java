@@ -27,7 +27,7 @@ public class LocacaoService {
 		}
 
 		if (spcSerasa.estaNegativado(usuario)) {
-			throw new Exception("Usuário negativado.");
+			throw new RuntimeException("Usuário negativado.");
 		}
 
 
@@ -57,7 +57,9 @@ public class LocacaoService {
 	public void notificarLocacaoEmAtraso(){
 		List<Locacao> locacaoesEmAtrado = dao.obterAtrasados();
 		for(Locacao locacao : locacaoesEmAtrado){
-			emailService.enviarEmailCobranca(locacao.getUsuario());
+			if(locacao.getDataRetorno().before(new Date())){
+				emailService.enviarEmailCobranca(locacao.getUsuario());
+			}
 		}
 	}
 
